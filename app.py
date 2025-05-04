@@ -13,19 +13,138 @@ api_key = os.getenv('API_KEY')
 # Inicializar la app Dash
 app = dash.Dash(__name__)
 
+# Estilos CSS personalizados
+app.index_string = '''
+<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            /* Estilos generales */
+            .responsive-table-container {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Estilos para la tabla */
+            .responsive-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 15px 0;
+            }
+
+            .responsive-table th,
+            .responsive-table td {
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+                min-width: 100px;
+            }
+
+            .responsive-table th {
+                background-color: #f4f4f4;
+                font-weight: bold;
+            }
+
+            /* Estilos para móviles */
+            @media screen and (max-width: 600px) {
+                .responsive-table {
+                    display: block;
+                }
+
+                .responsive-table thead,
+                .responsive-table tbody,
+                .responsive-table tr {
+                    display: block;
+                }
+
+                .responsive-table td {
+                    display: flex;
+                    padding: 8px;
+                    border: none;
+                }
+
+                .responsive-table td::before {
+                    content: attr(data-label);
+                    font-weight: bold;
+                    width: 120px;
+                    min-width: 120px;
+                }
+
+                .responsive-table tr {
+                    margin-bottom: 15px;
+                    border-bottom: 2px solid #ddd;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+'''
+
 # Layout de la app
 app.layout = html.Div([
-    html.H1("Extractor de comentarios de YouTube"),
+    html.H1("Extractor de comentarios de YouTube",
+            style={'textAlign': 'center', 'margin': '20px 0', 'fontSize': '24px'}),
     html.Div([
-        dcc.Input(id="youtube-url", type="text", placeholder="Tu URL de YouTube"),
-        html.Button('Enviar', id='submit-button', n_clicks=0),
+        dcc.Input(
+            id="youtube-url",
+            type="text",
+            placeholder="Tu URL de YouTube",
+            style={
+                'width': '80%',
+                'maxWidth': '500px',
+                'padding': '10px',
+                'marginRight': '10px',
+                'marginBottom': '10px'
+            }
+        ),
+        html.Button(
+            'Enviar',
+            id='submit-button',
+            n_clicks=0,
+            style={
+                'padding': '10px 20px',
+                'backgroundColor': '#4CAF50',
+                'color': 'white',
+                'border': 'none',
+                'borderRadius': '4px',
+                'cursor': 'pointer'
+            }
+        ),
+    ], style={'textAlign': 'center', 'margin': '20px 0'}),
+    html.Div([
+        html.Button(
+            'DESCARGAR COMENTARIOS',
+            id='download-button',
+            n_clicks=0,
+            style={
+                'display': 'none',
+                'padding': '10px 20px',
+                'backgroundColor': '#008CBA',
+                'color': 'white',
+                'border': 'none',
+                'borderRadius': '4px',
+                'cursor': 'pointer',
+                'margin': '10px 0'
+            }
+        )
     ], style={'textAlign': 'center'}),
-    html.Div([
-        html.Button('DESCARGAR COMENTARIOS', id='download-button', n_clicks=0, style={'display': 'none'})
-    ], style={'textAlign': 'center', 'margin': '9, auto'}),
     dcc.Download(id="download-excel"),
-    html.Div(id="output-div", style={'textAlign': 'left', 'padding': '20px'}),
-])
+    html.Div(id="output-div", style={'padding': '20px'})
+], style={'maxWidth': '1200px', 'margin': '0 auto', 'padding': '0 15px'})
 
 def get_video_id(url):
     """
@@ -38,7 +157,7 @@ def get_video_id(url):
     # youtube.com/watch?v=VIDEO_ID (incluye m.youtube.com)
     match = re.match(r'(https?://)?(www\.|m\.)?youtube\.com/watch\?v=([^&]+)', url)
     if match:
-        return match.group(4)
+        return match.group(3)
     # youtube.com/watch?...&v=VIDEO_ID&...
     match = re.search(r'v=([^&]+)', url)
     if match:
@@ -94,23 +213,29 @@ def create_grouped_table(df):
     rows = []
     for i, row in df.iterrows():
         is_reply = row["Es respuesta"] == "Sí"
-        style = {'paddingLeft': '40px'} if is_reply else {'fontWeight': 'bold', 'backgroundColor': '#f0f0f0'}
+        style = {'paddingLeft': '40px'} if is_reply else {'backgroundColor': '#f8f8f8'}
 
         rows.append(
             html.Tr([
-                html.Td(row["Autor"], style=style),
-                html.Td(row["Comentario"], style=style),
-                html.Td(row["Likes"], style=style),
-                html.Td(row["Publicado en"], style=style),
+                html.Td(row["Autor"], **{'data-label': 'Autor'}, style=style),
+                html.Td(row["Comentario"], **{'data-label': 'Comentario'}, style=style),
+                html.Td(row["Likes"], **{'data-label': 'Likes'}, style=style),
+                html.Td(row["Publicado en"], **{'data-label': 'Publicado en'}, style=style),
             ])
         )
 
-    table = html.Table([
-        html.Thead(html.Tr([
-            html.Th("Autor"), html.Th("Comentario"), html.Th("Likes"), html.Th("Publicado en")
-        ])),
-        html.Tbody(rows)
-    ], style={'width': '100%', 'borderCollapse': 'collapse'})
+    table = html.Div([
+        html.Table([
+            html.Thead(html.Tr([
+                html.Th("Autor"),
+                html.Th("Comentario"),
+                html.Th("Likes"),
+                html.Th("Publicado en")
+            ])),
+            html.Tbody(rows)
+        ], className='responsive-table')
+    ], className='responsive-table-container')
+
     return table
 
 @app.callback(
@@ -126,7 +251,17 @@ def update_output(n_clicks, url):
             comments_data = get_comments(video_id)
             df = pd.DataFrame(comments_data)
             grouped_table = create_grouped_table(df)
-            return grouped_table, {'display': 'inline-block'}
+            button_style = {
+                'display': 'inline-block',
+                'padding': '10px 20px',
+                'backgroundColor': '#008CBA',
+                'color': 'white',
+                'border': 'none',
+                'borderRadius': '4px',
+                'cursor': 'pointer',
+                'margin': '10px 0'
+            }
+            return grouped_table, button_style
         else:
             return "Link de YouTube inválido", {'display': 'none'}
     return "", {'display': 'none'}
@@ -150,5 +285,3 @@ server = app.server
 
 if __name__ == '__main__':
     app.run(debug=False)
-
-
