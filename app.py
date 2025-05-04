@@ -28,11 +28,21 @@ app.layout = html.Div([
 ])
 
 def get_video_id(url):
-    match = re.match(r'(https?://)?(www\.)?(youtube\.com|youtu\.?be)/.+$', url)
+    """
+    Extrae el ID del video de una URL de YouTube en los formatos más comunes.
+    """
+    # youtu.be/VIDEO_ID
+    match = re.match(r'(https?://)?(www\.)?youtu\.be/([^?&]+)', url)
     if match:
-        found = re.search(r'v=([^&]+)', url)
-        if found:
-            return found.group(1)
+        return match.group(3)
+    # youtube.com/watch?v=VIDEO_ID (incluye m.youtube.com)
+    match = re.match(r'(https?://)?(www\.|m\.)?youtube\.com/watch\?v=([^&]+)', url)
+    if match:
+        return match.group(4)
+    # youtube.com/watch?...&v=VIDEO_ID&...
+    match = re.search(r'v=([^&]+)', url)
+    if match:
+        return match.group(1)
     return None
 
 def get_comments(video_id):
