@@ -1,0 +1,4 @@
+dash
+pandas
+google-api-python-client
+python-dotenv
