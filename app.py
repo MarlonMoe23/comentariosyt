@@ -137,4 +137,5 @@ def download_comments(n_clicks, url):
     return None
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run(debug=False)
+
