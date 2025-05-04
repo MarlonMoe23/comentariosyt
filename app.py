@@ -136,6 +136,9 @@ def download_comments(n_clicks, url):
             return dcc.send_data_frame(df.to_excel, output_filename, index=False)
     return None
 
+server = app.server
+
 if __name__ == '__main__':
     app.run(debug=False)
+
 
