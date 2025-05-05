@@ -23,65 +23,79 @@ app.index_string = '''
         {%favicon%}
         {%css%}
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            /* Estilos generales */
-            .responsive-table-container {
-                width: 100%;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
+        
+<style>
+    /* Estilos generales */
+    .responsive-table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 
-            /* Estilos para la tabla */
-            .responsive-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 15px 0;
-            }
+    /* Estilos para la tabla */
+    .responsive-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+    }
 
-            .responsive-table th,
-            .responsive-table td {
-                padding: 12px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-                min-width: 100px;
-            }
+    .responsive-table th,
+    .responsive-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        min-width: 100px;
+    }
 
-            .responsive-table th {
-                background-color: #f4f4f4;
-                font-weight: bold;
-            }
+    .responsive-table th {
+        background-color: #f4f4f4;
+        font-weight: bold;
+    }
 
-            /* Estilos para móviles */
-            @media screen and (max-width: 600px) {
-                .responsive-table {
-                    display: block;
-                }
-
-                .responsive-table thead,
-                .responsive-table tbody,
-                .responsive-table tr {
-                    display: block;
-                }
-
-                .responsive-table td {
-                    display: flex;
-                    padding: 8px;
-                    border: none;
-                }
-
-                .responsive-table td::before {
-                    content: attr(data-label);
-                    font-weight: bold;
-                    width: 120px;
-                    min-width: 120px;
-                }
-
-                .responsive-table tr {
-                    margin-bottom: 15px;
-                    border-bottom: 2px solid #ddd;
-                }
-            }
-        </style>
+    /* Estilos para móviles */
+    @media screen and (max-width: 600px) {
+        .responsive-table thead {
+            display: none;
+        }
+        .responsive-table {
+            display: block;
+        }
+        .responsive-table tbody,
+        .responsive-table tr {
+            display: block;
+        }
+        .responsive-table td {
+            display: flex;
+            align-items: flex-start;
+            padding: 8px;
+            border: none;
+            white-space: normal;
+            word-break: break-word;
+        }
+        .responsive-table td::before {
+            content: attr(data-label);
+            font-weight: bold;
+            width: 120px;
+            min-width: 120px;
+            margin-right: 8px;
+        }
+        .responsive-table td[data-label="Comentario"] {
+            flex-direction: column;
+            align-items: flex-start;
+            white-space: normal;
+            word-break: break-word;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .responsive-table td[data-label="Comentario"]::before {
+            margin-bottom: 4px;
+        }
+        .responsive-table tr {
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+        }
+    }
+</style>
     </head>
     <body>
         {%app_entry%}
