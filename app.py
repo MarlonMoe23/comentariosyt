@@ -23,7 +23,7 @@ app.index_string = '''
         {%favicon%}
         {%css%}
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
+
 <style>
     /* Estilos generales */
     .responsive-table-container {
@@ -110,6 +110,7 @@ app.index_string = '''
 
 # Layout de la app
 app.layout = html.Div([
+    dcc.Store(id='comments-store'),  # Almacén de datos
     html.H1("Extractor de comentarios de YouTube",
             style={'textAlign': 'center', 'margin': '20px 0', 'fontSize': '24px'}),
     html.Div([
@@ -255,6 +256,7 @@ def create_grouped_table(df):
 @app.callback(
     Output('output-div', 'children'),
     Output('download-button', 'style'),
+    Output('comments-store', 'data'),
     Input('submit-button', 'n_clicks'),
     State('youtube-url', 'value')
 )
@@ -275,22 +277,22 @@ def update_output(n_clicks, url):
                 'cursor': 'pointer',
                 'margin': '10px 0'
             }
-            return grouped_table, button_style
+            return grouped_table, button_style, comments_data
         else:
-            return "Link de YouTube inválido", {'display': 'none'}
-    return "", {'display': 'none'}
+            return "Link de YouTube inválido", {'display': 'none'}, None
+    return "", {'display': 'none'}, None
 
 @app.callback(
     Output('download-excel', 'data'),
     Input('download-button', 'n_clicks'),
+    State('comments-store', 'data'),
     State('youtube-url', 'value')
 )
-def download_comments(n_clicks, url):
-    if n_clicks > 0:
+def download_comments(n_clicks, stored_comments, url):
+    if n_clicks > 0 and stored_comments:
         video_id = get_video_id(url)
         if video_id:
-            comments_data = get_comments(video_id)
-            df = pd.DataFrame(comments_data)
+            df = pd.DataFrame(stored_comments)
             output_filename = f"youtube_comments_{video_id}.xlsx"
             return dcc.send_data_frame(df.to_excel, output_filename, index=False)
     return None
