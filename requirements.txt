@@ -3,3 +3,4 @@ pandas
 google-api-python-client
 python-dotenv
 gunicorn
+openpyxl
